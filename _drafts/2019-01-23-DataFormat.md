@@ -12,8 +12,6 @@ tags: [binary,netcdf]
 * 이진 파일: 컴퓨터 친화적 데이터
 * NetCDF, Grib, HDF5 등 :<br>이진 파일의 일종으로 컴퓨터 친화적이지만, 인간 친화적이기도 함<br>![binary_format](../assets/images/DataFormat/binary_format.png)
 
-
-
 ### Binary format data 읽고 쓰기
 
 * Fortran: binary data 읽고 쓰기<br>![read_bin_fortran](../assets/images/DataFormat/read_bin_fotran.png)
@@ -77,6 +75,34 @@ data:
 
 
 * Fortran: Simple NetCDF example<br>![nc_ex_fortran](../assets/images/DataFormat/nc_ex_fortran.png)
+
 * C: Simple NetCDF example<br>![nc_ex_c](../assets/images/DataFormat/nc_ex_c.png)
-* Python: Simple NetCDF example<br>![nc_ex_python](../assets/images/DataFormat/nc_ex_python.png)
-* 
+
+* Python: Simple NetCDF example<br>[![nc_ex_python](../assets/images/DataFormat/nc_ex_python.png)](../assets/images/DataFormat/nc_ex_python.png)
+
+  ```python
+  from netCDF4 import Dataset
+  
+  NX = 6; NY = 12
+  file_name = 'simple_xy.nc'
+  
+  with Dataset(file_name, 'w') as fout:
+      fout.createDimension('x', NX)
+      fout.createDimension('y', NY)
+      
+      data = fout.createVariable('data','f',('x','y'))
+      for i in range(NX):
+          for j in range(NY):
+              data[i,j] = i * NY + j
+  print("*** SUCCESS writing : %s"%file_name)
+  ```
+
+  ------
+
+  <center>- END -</center>
+
+  ------
+
+  <br><br>
+
+  <br>

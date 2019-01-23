@@ -1,5 +1,7 @@
 ---
+layout: posts
 title: github pages에서 latex를 직접 표지하기
+author: 김동훈
 ---
 
 Github pages에서 Jekyll을 사용하고 있다면,
