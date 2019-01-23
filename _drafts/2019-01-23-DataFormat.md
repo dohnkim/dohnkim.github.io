@@ -1,6 +1,6 @@
 ---
 layout: posts
-title: 해양-대기 분야에서의 자료 형식들
+title: 해양-대기 분야의 자료 형식들
 author: 김동훈
 categories: []
 tags: [binary,netcdf]
