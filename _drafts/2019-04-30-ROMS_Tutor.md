@@ -202,4 +202,55 @@ from bathy_smoother import *
 
 ```
 
- 
+http://github.com/dohnkim/ROMS/Grid/1_makeGrid4Soulik.ipynb
+
+
+
+# 5. 초기장 및 경계장 만들기
+## 5-1. 초기장(I.C.) 만들기
+
+https://github.com/dohnkim/ROMS/IC/1_getHYCOM4SoulikIC-v2.ipynb
+
+https://github.com/dohnkim/ROMS/IC/2_makeIC4Soulik-v2.ipynb
+
+
+
+## 5-2. 측면경계장(L.B.C.) 만들기
+
+https://github.com/dohnkim/ROMS/LBC/1_getHYCOM4SoulikLBCs-v2.ipynb
+
+https://github.com/dohnkim/ROMS/LBC/2_makeRemapWeights-v2.ipynb
+
+https://github.com/dohnkim/ROMS/LBC/3_makeLBC4Soulik-v2.ipynb
+
+
+
+## 5-3. 대기경계장(S.B.C, 표층외력) 만들기
+
+https://github.com/dohnkim/ROMS/SBC/1_getGFS4SoulikSBC-v1.ipynb
+
+https://github.com/dohnkim/ROMS/SBC/2_makeSBC4Soulik-v2.ipynb
+
+
+
+# 6. ROMS header file 만들기
+
+```cpp
+/* 운동량 방정식과 관련된 옵션 */
+#define UV_ADV  //이류항 계산
+#define UV_COR  //코리올리 항 계산
+#define UV_C2ADVECTION //2차 centered advection 계산
+#define UV_C4ADVECTION //4차 centered advection 계산
+
+#define WET_DRY /*
+```
+
+
+
+# 7. ROMS input file 만들기
+
+
+
+# 8. 실행하기
+
+mpirun -np 25 ./romsM ocean_soulik.in >& out.log
