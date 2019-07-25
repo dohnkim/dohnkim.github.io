@@ -1,20 +1,20 @@
 ---
 layout: posts
-title: ROMS 로 태풍 솔릭(Soulik) 모의해 보기
+title: ROMS 로 태풍 솔릭(Soulik) 시기의 해양순환 모의해 보기
 author: 김동훈, 문일주
 categories: []
-tags: [WRF, Soulik]
+tags: [ROMS, Soulik]
 
 ---
 
 
 
-<p style="text-align:right">작성 : 김동훈 (<a href="http://www.dhkim.info">http://www.dhkim.info</a>, 인하대학교)<br/> & 문일주 (제주대학교)<br/>2019년 7월 24일</p>
+<p style="text-align:right">작성 : 김동훈 (<a href="http://www.dhkim.info">http://www.dhkim.info</a>, 인하대학교)<br/> & 문일주 (제주대학교)<br/>2019년 7월 25일</p>
 
 ROMS (Regional Ocean Modeling System) 모델(모형)의 설치 및 실험에 관한 상세한 내용은
 "[Installing and Running ROMS for First Time Users](https://www.myroms.org/wiki/ROMS_UNSW2008)"에 잘 설명되어 있으므로 영어에 친숙하신 분이라면 [here](https://www.myroms.org/wiki/ROMS_UNSW2008)를 참고하세요.
 
-여기에서는 **태풍 솔릭(Soulik)을 대상** (2 grids nested)으로 설명하며, 최근 버전인 **ROMS-3.6 r964** (2019년 5월 1일 배포)을 사용합니다.
+여기에서는 **태풍 솔릭(Soulik)을 대상** (2 grids nested으로 설명하며, 최근 버전인 **ROMS-3.6 r964** (2019년 5월 1일 배포)을 사용합니다.
 ***절의 제목 앞에 숫자****가 붙어 있는 부분은 사용자가 직접 실행해야 하는 부분을 의미합니다.*
 
 # 소 개
