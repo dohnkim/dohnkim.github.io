@@ -11,19 +11,19 @@ tags: [ROMS, Soulik]
 
 <p style="text-align:right">작성 : 김동훈 (<a href="http://www.dhkim.info">http://www.dhkim.info</a>, 인하대학교)<br/> & 문일주 (제주대학교)<br/>2019년 7월 25일</p>
 
+# 소 개
+
 ROMS (Regional Ocean Modeling System) 모델(모형)의 설치 및 실험에 관한 상세한 내용은
 "[Installing and Running ROMS for First Time Users](https://www.myroms.org/wiki/ROMS_UNSW2008)"에 잘 설명되어 있으므로 영어에 친숙하신 분이라면 [here](https://www.myroms.org/wiki/ROMS_UNSW2008)를 참고하세요.
 
-여기에서는 **태풍 솔릭(Soulik)을 대상** (2 grids nested으로 설명하며, 최근 버전인 **ROMS-3.6 r964** (2019년 5월 1일 배포)을 사용합니다.
+여기에서는 **태풍 솔릭(Soulik)** 시기의 해양순환 모의를 설명하며, 최근 버전인 **ROMS-3.6 r964** (2019년 5월 1일 배포)을 사용합니다.
 ***절의 제목 앞에 숫자****가 붙어 있는 부분은 사용자가 직접 실행해야 하는 부분을 의미합니다.*
-
-# 소 개
-
-
 
 # 소프트웨어 요구사항
 
-
+- Intel Fortran Compiler
+- MPI library (openmpi 또는 mpich, mvapich 등)
+- python 관련 : pyroms 모듈, jupyter notebook 또는 lab
 
 # 0. 환경 설정
 
@@ -60,33 +60,149 @@ svn info
 
 
 
-# 2. 프로젝트 디렉토리 만들기
+# 2. 프로젝트 디렉토리 만들고 컴파일 하기
 
 ```bash
 mkdir -p $PROJ; cd $PROJ
+
+# build 스크립트는 bash와 sh의 두가지를 지원하고 있으며 여기에서는 bash 기준으로 설명합니다.
 cp ${ROMSsrc}/trunk/ROMS/Bin/build_roms.bash .
+
+# build_roms.bash의 사용자 정의
+vi ./build_roms.bash
+> export   ROMS_APPLICATION=SOULIK # 모두 대문자로 쓰며, 컴파일 시 소문자인 soulik.h 를 참조하게 됨
+> export        MY_ROOT_DIR=${ROMSsrc}
+> export        USE_NETCDF4=on     # netcdf의 버전에 따라 선택하세요.
 ```
 
-~~ROMS 홈페이지에서는 build.bash 만을 프로젝트 디렉토리에 복사하고 소스코드를 참조하도록 설명하고 있지만, 경험 상 프로젝트 마다 모델 소스코드를 모두 복사하는 것이 편리합니다.~~ 
+> Note) **USE_NETCDF4** 를 on 하였을 경우는 컴파일 시에 NETCDF 라이브러리의 위치를 묻는 "**nf-config**" 명령을 사용하게 되는데, 이 명령이 없거나 실행 시에 문제가 있다면 **${ROMSsrc}/trunk/Compilers/Linux-ifort.mk** (*시스템에 따라 파일이 다를 수 있음*) 을 편집하여 "nf-config" 를 "nc-config" 로 바꾸어 줍니다. 또한, nc-config 의 명령이 제대로 실행되는지도 확인해야 합니다.<br/>참고로, nf-config 는 Fortran 용 실행화일이며, nc-config 는 C 용 실행화일입니다. 보통은 Fortran과 C 용 라이브러리가 동일 디렉토리에 설치되므로 아무거나 써도 상관이 없습니다.
 
-build 스크립트는 bash와 sh의 두가지를 지원하고 있으며 여기에서는 bash 기준으로 설명합니다.
+## 2-1. Header 파일 만들기
+
+ROMS의 컴파일 시 사용할 header 파일을 다음과 같이 작성합니다. 파일 이름은 $PROJ 디렉토리에 사용한 이름과 같은 soulik.h 로 저장합니다. 파일 이름은 모두 **소문자**이어야 합니다.
+
+```cpp
+cd $PROJ
+cat > soulik.h << END
+/*
+** Options for NWP Test.
+** Application flag: NWP
+*/
+
+/* Physics + numerics */
+#define UV_ADV           /* 이류항 계산 */
+#define UV_QDRAG         /* Quadratic bottom friction */
+#define UV_COR           /* 코리올리 힘 계산 */
+#define UV_VIS2          /* Harmonic horizontal mixing */
+
+#define TS_U3HADVECTION  /* 3rd-order upstream horiz. advection */
+#define TS_DIF2          /* Harmonic horizontal mixing for tracers */
+#define SALINITY         /* 염분 계산 */
+
+#define DJ_GRADPS        /* Splines density Jacobian (Shchepetkin, 2000) */
+#define MIX_S_UV         /* mixing along constant S-surfaces */
+#define MIX_GEO_TS       /* mixing along geopotential (constant Z) surfaces */
+
+#define SOLVE3D          /* 3D 원시방정식 계산 */
+#define CURVGRID         /* Curvilinear coordinates grid */
+
+#define SPLINES_VDIFF
+#define SPLINES_VVISC
+#define NONLIN_EOS       /* 비선형 상태방정식 사용 */
+/*#define WET_DRY*/      /* Wetting and Drying 옵션 */
+
+/* Grid and Initial */
+#define MASKING          /* land/sea masking */
+
+/* Forcing */
+/*#define BULK_FLUXES*/  /* Bulk fluxes 계산 */
+#define ATM_PRESS        /* 해수면 위에 대기압 적용 */
+#define ANA_BTFLUX       /* analytical bottom temperature flux 사용 */
+#define ANA_BSFLUX       /* analytical bottom salinity flux 사용 */
+#define ANA_BPFLUX       /* analytical bottom passive tracers fluxes 사용 */
+#define LONGWAVE_OUT     /* outgoing longwave radiation */
+#define EMINUSP          /* E-P 계산 */
+#define SOLAR_SOURCE     /*solar radiation source term*/
+#undef QCORRECTION       /*net heat flux correction */
+#undef SCORRECTION       /*freshwater flux correction*/
+#undef SRELAXATION       /*salinity relaxation as a freshwater flux*/
+#undef DIURNAL_SRFLUX    /*mdulate input shortwave with diurnal cycle*/
+
+/* Turbulence closure */
+#define GLS_MIXING       /* Generic Length-Scale mixing */
+#undef  MY25_MIXING      /* Mellor/Yamada Level-2.5 closure */
+#undef  LMD_MIXING       /* Large et al. (1994) K-profile vertical parameterization */
+/*#define LIMIT_VDIFF*/
+/*#define LIMIT_VVISC*/
+
+#if defined GLS_MIXING || defined MY25_MIXING
+# define KANTHA_CLAYSON  /* Kantha and Clayson stability function */
+# define N2S2_HORAVG     /* Horizontal smoothing of buoyancy/shear */
+# define RI_SPLINES      
+# define CRAIG_BANNER    /* Craig and Banner wave breaking surface flux */
+# define CHARNOK         /* Charnok surface roughness from wind stress */
+#endif
+#ifdef LMD_MIXING
+# define LMD_RIMIX       /* Add diffusivity due to shear instability */
+# define LMD_CONVEC      /* Add convective mixing due to shear instability */
+# undef LMD_DDMIX        /* Add double-diffusive mixing */
+# define LMD_SKPP        /* Surface boundary layer KPP mixing */
+# undef LMD_BKPP         /* Bottom boundary layer KPP mixing */
+# define LMD_NONLOCAL    /* Nonlocal transport */
+#endif
+
+#undef SSH_TIDES         /* Imposing tidal elevation */
+#undef UV_TIDES          /* Imposing tidal currents */
+#undef RAMP_TIDES        /* Ramping (over one day) tidal forcing */
+
+/* Output */
+#define AVERAGES         /* 시간 평균된 결과로 저장 */
+#define AVERAGES_FLUXES  /* 시간 평균된 flux로 저장 */
+#undef DIAGNOSTICS_UV    /* Writing out momentum diagnostics */
+#undef DIAGNOSTICS_TS    /* Writing out tracer diagnostics */
+
+END
+```
 
 
 
-# 3. build.bash 사용자 정의
+## 2-2. 컴파일 하기
 
-
-$PROJ/build_roms.bash 를 다음과 같이 편집합니다.
+프로젝트의 header 파일을 만들었으면, ROMS 모델을 컴파일 합니다. 다음과 같이 컴파일하고 표출되는 메세지에 error 가 없는지 유심히 살펴 봅니다. 최종적으로 "**romsM**" 이 제대로 생성되었는지 확인합니다.
 
 ```bash
-vi $PROJ/build_roms.bash
-> export   ROMS_APPLICATION=SOULIK #모두 대문자로 쓰며, 컴파일 시 소문자인 soulik.h 를 참조하게 됨
-> export        MY_ROOT_DIR=${ROMSsrc}
+cd $PROJ
+\rm -f Build_roms romsM
+./build_roms.bash      # 1개의 processor를 사용하여 컴파일
+./build_roms.bash -j 8 # 시스템이 멀티코아를 가지고 있을 경우 최대 8개의 코아를 사용하여 컴파일
+ls -l romsM
 ```
 
 
 
-# 4. Grid 만들기
+# 3. 격자 및 입력자료 만들기
+
+사용자의 연구 상황에 따라서 격자 및 입력자료를 만드는 방법이 다를 수 있으며, 여기에서는 **pyroms를 이용하는 방법**을 설명하도록 하겠습니다.
+
+여기에서는 제시된 스크립트들은 pyroms의 예제들을 참조하여 저자가 직접 만든 것입니다.
+
+## 3-1. pyroms 및 jupyter 설치하기
+
+pyroms는 설치하기가 쉽지않은 모듈이지만, 성공적으로 설치할 경우 편리성이 매우 높은 도구입니다.<br/>설치과정 대한 자세한 설명은 지면이 길어지므로 **[pyroms 설치하기](http://blog.dhkim.info/pyroms/)** 를 참고하여 설치하시기 바랍니다.
+
+pyroms을 사용하여 격자 및 입력자료를 만드는 과정은 복잡하고 이해하기 힘들기 때문에 설명을 쉽게 하기 위하여 jupyter notebook 또는 jupyter lab을 사용하도록 하였습니다. Jupyter와 관련된 설치 및 사용법은 여기의 설명 범위에서 벗어나므로 인터넷 검색을 통하면 설치 및 사용법 익히시기 바랍니다. 또한, anaconda를 설치하였다면 jupyter가 이미 설치되어 있어서 바로 사용할 수 있습니다.
+
+jupyter 가 아닌 python 으로 직접 실행하실 경우는 다음의 명령으로 *.ipynb 화일을 *.py 로 변환하여 사용하시기 바랍니다.
+
+```bash
+conda install jupyter # jupyter가 설치되어 있지 않은 경우
+jupyter jupyter nbconvert --to script myFile.ipynb
+# myFile.py 가 생성됨.
+```
+
+
+
+## 3-2. Grid 만들기
 
 ROMS의 영역 격자를 만드는 방법은 모델의 역사 만큼이나 다양하게 존재합니다. 대표적으로 다음과 같은 것들이 있으니 참고하세요.
 
@@ -97,176 +213,78 @@ ROMS의 영역 격자를 만드는 방법은 모델의 역사 만큼이나 다�
 - COAWST Tools: wrf2roms_mw.m, create_roms_xygrid.m
 - … ...
 
-사용자의 연구상황에 따라서 격자를 만드는 방법이 다를 수 있으며,</br>
-여기에서는 **pyroms를 이용하여 격자를 직접 만드는 방법**을 설명하도록 하겠습니다. 
+
+
+1. Jupyter notebook의 형식으로 작성된 다음의 링크를 따라서 격자를 만듭니다.
+   [makeGrid4Soulik](https://github.com/dohnkim/ROMS/blob/master/Grid/1_makeGrid4Soulik.ipynb)
 
 
 
-## 4-1. pyroms 설치하기
+## 3-3. 초기장(I.C.) 만들기
 
-Python의 모듈로 제공되고 있는 pyroms를 이용하는 방법으로써, 스크립트는 예제들을 참조하여 저자가 직접 만든 것입니다.
-
-pyroms는 설치하기가 쉽지않은 모듈이지만, 성공적으로 설치할 경우 편리성이 매우 높은 도구이므로 설치과정을 자세히 설명하고자 합니다.
-
-**pyroms**는 Python의 설치 프로그램(pip) 또는 Anaconda의 conda에서 지원하지 않는 모듈이므로 직접 설치해야 합니다. 사용자 환경에 따라서 설치 시에 여러가지 문제점이 발생할 수 있으므로 여기에서는 Anaconda의 축소버전인 Miniconda를 사용하여 설치하도록 하겠습니다. 
-
-#### 4-1-1. Miniconda 설치 및 ROMS 환경 구축
-
-```bash
-# https://docs.conda.io/en/latest/miniconda.html 에서 사용자 환경에 맞는 최신 버전을 가져 오세요.
-# 저자는 "64-bit(bash installer) for Linux" 버전을 사용하였습니다.
-# 다음의 명령으로 설치를 시작합니다.
-bash ./Miniconda3-latest-Linux-x86_64.sh
-
-# 설치과정 중 물어보는 "설치할 디렉토리"는 사용자의 적절한 디렉토리를 지정합니다. 
-# 여기에서는 ${HOME}/Local/miniconda3 에 설치하였습니다.
-# 설치의 마지막 단계에서 묻는 "conda 환경을 구성하겠냐"는 질문에는 "yes"를 선택하여 
-# ~/.bashrc 에 환경설정이 자동으로 추가되도록 하세요.
-# 사용자가 사용하는 Shell이 bash가 아닌 경우에는 ~/.bashrc의 내용을 참조하여 적절하게 반영하여야 합니다.
-# 제대로 설치되었다면 "conda" 명령이 실행 가능해야 합니다.
-
-# conda에 가장 많이 사용되는 다운로드 채널을 추가합니다.
-conda config --add channels conda-forge
-
-# ROMS를 위한 독립 환경을 생성합니다. "-n" 옵션 다음에 붙는 이름은 사용자가 임의로 정하세요.
-conda create -n pyroms python=3 ipython numpy scipy netCDF4
-conda activate pyroms
-conda install matplotlib=2.2.4 basemap basemap-data-hires esmf nco pygrib
-# Note) pyroms 내부에서 "from matplotlib.mlab import dist_point_to_segment"을 사용하는데,
-#       matplotlib 의 최신 버전인 v3.x에서는 지원하지 않기때문에 v2.x의 최신 버전을 설치한다.
-conda install pyproj=1.9.6
-# Note) pyroms 내부에서 pyproj의 espg 자료를 사용하는데, pyproj의 최신 버전인 2.x 에는 espg 자료가 없으므로
-#       pyrpoj=1.9.6 버전을 설치한다.
-
-# "conda activate pyroms"를 수행하여 사용자 프롬프트 맨 앞에 "(pyroms)"가 추가되었다면 성공적으로 설치한 것입니다.
-```
-
-#### 4-1-2. 삭제: natgrid 설치 (*필요하지 않음*)
-
-**pyroms** 는 NCAR의 natgrid (a natural neighbor gridding package) 라이브러리를 사용한다고 합니다. 
-conda의 ROMS 환경 내에서 다음과 같이 설치합니다.
-
-```bash
-(pyroms) cd ~/Local
-# git으로 최신 버전의 소스코드를 받아 옵니다.
-(pyroms) git clone https://github.com/matplotlib/natgrid.git
-(pyroms) cd natgrid
-(pyroms) CC=gcc python3 setup.py build
-# warning 메세지가 많이 나올 수 있으나 error 메세지가 나오지 않으면 됨
-(pyroms) python3 setup.py install  # 라이브러리를 python3의 site-packages에 설치
-# (pyroms) python3 test.py  # 라이브러리 테스트
-```
-
-#### 4-1-3. pyroms 설치
-
-```bash
-(pyroms) export DESTDIR=${HOME}/Local/miniconda3/envs/pyroms
-(pyroms) cd ~/Local
-# git으로 최신 버전의 소스코드를 받아 옵니다. 
-# 상세한 설명은 https://github.com/ESMG/pyroms 를 방문하세요.
-(pyroms) git clone https://github.com/ESMG/pyroms.git
-
-# pyroms의 설치를 시작합니다. ----------------------------------------------------
-# pyroms는 여러가지 패키지를 함께 사용하기 때문에 설치를 성공하는데 많은 어려움이 있을 수 있습니다. 
-# 저자도 수십번의 과정을 거쳐서 성공한 결과를 요약하여 공유하는 것이니 하나 하나 잘 따라하셔야 합니다. 
-(pyroms) cd pyroms/pyroms_toolbox
-(pyroms) python ../pyinstall.py ${DESTDIR}
-(pyroms) cd ../bathy_smoother
-(pyroms) python ../pyinstall.py ${DESTDIR}
-(pyroms) cd ../pyroms
-(pyroms) vi install_pyroms.sh
-          > DESTDIR=${DESTDIR}
-          > PYROMS_PATH=$DESTDIR/lib/python3.7/site-packages/pyroms #Note) python 버전 확인
-          > #python setup.py build --fcompiler=gnu95;  #주석 처리
-          > #python setup.py install --prefix=$DESTDIR #주석 처리
-          > python ../pyinstall.py $DESTDIR           #위에 주석 처리한 곳 바로 아래에 추가
-(pyroms) vi external/scrip/source/makefile
-          > NC_CONFIG = nc-config #nf-config 를 nc-config 로 수정
-          > LIB = $(shell $(NC_CONFIG) --libs) #--flibs 를 --libs 로 수정
-(pyroms) ./install_pyroms.sh
-(pyroms) export PYROMS_GRIDID_FILE=${HOME}/Local/pyroms/pyroms/pyroms/gridid.txt
-
-(pyroms) cd $DESTDIR/lib/python3.7/site-packages #Note) python 버전에 따라 path가 다름
-(pyroms) cp pyroms_toolbox/*.so . ; cp bathy_smoother/*.so . ; cp pyroms/*.so .
-```
-
-### 4-1-4. pyroms 확인
-
-```python
-# pyproj 라이브러리를 설치하고 conda 환경을 재설정해 주어야
-# $PROJ_LIB 가 자동으로 설정되므로 다음 명령을 실행한다.
-(pyroms) conda deactivate
-(base) conda activate pyroms
-(pyroms) echo $PROJ_LIB
-
-# 환경 설정이 제대로 되었으면, 다음과 같이 pyroms 모듈을 import 하여 문제가 없는지 확인한다.
-(pyroms) ipython
-In [1]: import pyroms
-In [2]: import pyroms_toolbox
-In [3]: from bathy_smoother import *
-
-```
+1. **HYCOM** 자료 중에서 격자 크기에 맞는 영역의 해당 시작 날짜의 자료를 가져 옵니다. 
+   [getHYCOM4SoulikIC](https://github.com/dohnkim/ROMS/blob/master/IC/1_getHYCOM4SoulikIC-v2.ipynb)
+2. HYCOM 자료를 ROMS의 초기장으로 만듭니다.
+   [makeIC4Soulik](https://github.com/dohnkim/ROMS/blob/master/IC/2_makeIC4Soulik-v2.ipynb)
 
 
 
-## 4-2. Grid 만들기
+## 3-4. 측면경계장(L.B.C.) 만들기
 
-pyroms 를 성공적으로 설치하였으면, jupyter notebook 또는 jupyter lab 으로 makeGrid4Soulik.ipynb 를 이용하여 격자를 만듭니다. jupyter 관련한 설치 및 사용법은 여기의 설명 범위에서 벗어나므로 검색을 통하여 사용법을 익히시기 바랍니다.
-
-- [makeGrid4Soulik](https://github.com/dohnkim/ROMS/blob/master/Grid/1_makeGrid4Soulik.ipynb)
-
-jupyter 가 아닌 python 으로 실행하실 경우는 다음의 명령으로 *.ipynb 화일을 *.py 로 변환하여 사용하시기 바랍니다.
-
-```bash
-conda install jupyter # jupyter가 설치되어 있지 않은 경우
-jupyter jupyter nbconvert --to script makeGrid4Soulik.ipynb
-```
+1. **HYCOM** 자료 중에서 격자의 측면에 맞는 영역에 대해 모델의 전체 계산 시간에 해당하는 시계열 자료를 가져 옵니다.
+   [getHYCOM4SoulikLBCs](https://github.com/dohnkim/ROMS/blob/master/LBC/1_getHYCOM4SoulikLBCs-v2.ipynb)
+2. HYCOM 격자와 ROMS 격자의 내삽 가중치 비율을 계산합니다.
+   [makeRemapWeights](https://github.com/dohnkim/ROMS/blob/master/LBC/2_makeRemapWeights-v2.ipynb)
+3. HYCOM 자료를 ROMS의 측면경계장으로 만듭니다.
+   [makeLBC4Soulik](https://github.com/dohnkim/ROMS/blob/master/LBC/3_makeLBC4Soulik-v2.ipynb)
 
 
 
-# 5. 초기장 및 경계장 만들기
+## 3-5. 대기경계장(S.B.C, 표층외력) 만들기
 
-## 5-1. 초기장(I.C.) 만들기
+1. **GFS** 로 부터 모델의 전체 계산 시간에 해당하는 전지구 시계열 자료를 가져 옵니다. 
+   [getGFS4SoulikSBC](https://github.com/dohnkim/ROMS/blob/master/SBC/1_getGFS4SoulikSBC-v1.ipynb)
 
-1. [getHYCOM4SoulikIC](https://github.com/dohnkim/ROMS/blob/master/IC/1_getHYCOM4SoulikIC-v2.ipynb)
-2. [makeIC4Soulik](https://github.com/dohnkim/ROMS/blob/master/IC/2_makeIC4Soulik-v2.ipynb)
-
-
-
-## 5-2. 측면경계장(L.B.C.) 만들기
-
-1. [getHYCOM4SoulikLBCs](https://github.com/dohnkim/ROMS/blob/master/LBC/1_getHYCOM4SoulikLBCs-v2.ipynb)
-2. [makeRemapWeights](https://github.com/dohnkim/ROMS/blob/master/LBC/2_makeRemapWeights-v2.ipynb)
-3. [makeLBC4Soulik](https://github.com/dohnkim/ROMS/blob/master/LBC/3_makeLBC4Soulik-v2.ipynb)
-
-
-
-## 5-3. 대기경계장(S.B.C, 표층외력) 만들기
-
-1. [getGFS4SoulikSBC](https://github.com/dohnkim/ROMS/blob/master/SBC/1_getGFS4SoulikSBC-v1.ipynb)
-
-2. [makeSBC4Soulik](https://github.com/dohnkim/ROMS/blob/master/SBC/2_makeSBC4Soulik-v2.ipynb)
+2. GFS 자료를 ROMS의 대기경계장으로 만듭니다.
+   [makeSBC4Soulik](https://github.com/dohnkim/ROMS/blob/master/SBC/2_makeSBC4Soulik-v2.ipynb)
 
    
 
-# 6. ROMS header file 만들기
+# 4. ROMS 모의하기
 
-```cpp
-/* 운동량 방정식과 관련된 옵션 */
-#define UV_ADV  //이류항 계산
-#define UV_COR  //코리올리 항 계산
-#define UV_C2ADVECTION //2차 centered advection 계산
-#define UV_C4ADVECTION //4차 centered advection 계산
 
-#define WET_DRY /**/
+
+## 4-1. input file 만들기
+
+```bash
+cd $PROJ
+cat ocean.in << END
+
+
+END
 ```
 
 
 
-# 7. ROMS input file 만들기
+## 4-2. 모의하기
+
+모델의 실행은 사용자의 시스템에 따라 다를 수 있으므로, 여기에서는 1개 노드에 36개 이상의 코어를 가지고 있는 시스템을 가정하여 다음과 같이 실행합니다.
+
+```bash
+mpirun -np 36 ./romsM ocean.in >& out.log
+```
 
 
 
-# 8. 실행하기
+# 5. ROMS 결과 분석하기
 
-mpirun -np 36 ./romsM ocean_soulik.in >& out.log
+ROMS의 결과 분석은 다양한 방법이 있으며 과학적 지식이 필요한 부분이므로 추후에 다른 지면을 사용하여 설명하도록 하겠습니다.
+
+
+
+
+
+---
+
+---
+
