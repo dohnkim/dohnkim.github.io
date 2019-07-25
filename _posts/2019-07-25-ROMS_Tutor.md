@@ -215,7 +215,7 @@ ROMS의 영역 격자를 만드는 방법은 모델의 역사 만큼이나 다�
 
 
 
-1. Jupyter notebook의 형식으로 작성된 다음의 링크를 따라서 격자를 만듭니다.
+1. Jupyter notebook의 형식으로 작성된 다음의 링크를 따라서 격자를 만듭니다.<br/>
    [makeGrid4Soulik](https://github.com/dohnkim/ROMS/blob/master/Grid/1_makeGrid4Soulik.ipynb)
 2. 생성된 "Soulik_grd_v2.nc" 를 $PROJ 디렉토리에 복사합니다.
 
@@ -223,9 +223,9 @@ ROMS의 영역 격자를 만드는 방법은 모델의 역사 만큼이나 다�
 
 ## 3-3. 초기장(I.C.) 만들기
 
-1. **HYCOM** 자료 중에서 격자 크기에 맞는 영역의 해당 시작 날짜의 자료를 가져 옵니다. 
+1. **HYCOM** 자료 중에서 격자 크기에 맞는 영역의 해당 시작 날짜의 자료를 가져 옵니다.<br/>
    [getHYCOM4SoulikIC](https://github.com/dohnkim/ROMS/blob/master/IC/1_getHYCOM4SoulikIC-v2.ipynb)
-2. HYCOM 자료를 ROMS의 초기장으로 만듭니다.
+2. HYCOM 자료를 ROMS의 초기장으로 만듭니다.<br/>
    [makeIC4Soulik](https://github.com/dohnkim/ROMS/blob/master/IC/2_makeIC4Soulik-v2.ipynb)
 3. 생성된 "ROMS4Soulik_ic_2018-08-21T00:00:00Z.nc4"를 $PROJ 디렉토리에 복사합니다.
 
@@ -233,11 +233,11 @@ ROMS의 영역 격자를 만드는 방법은 모델의 역사 만큼이나 다�
 
 ## 3-4. 측면경계장(L.B.C.) 만들기
 
-1. **HYCOM** 자료 중에서 격자의 측면에 맞는 영역에 대해 모델의 전체 계산 시간에 해당하는 시계열 자료를 가져 옵니다.
+1. **HYCOM** 자료 중에서 격자의 측면에 맞는 영역에 대해 모델의 전체 계산 시간에 해당하는 시계열 자료를 가져 옵니다.<br/>
    [getHYCOM4SoulikLBCs](https://github.com/dohnkim/ROMS/blob/master/LBC/1_getHYCOM4SoulikLBCs-v2.ipynb)
-2. HYCOM 격자와 ROMS 격자의 내삽 가중치 비율을 계산합니다.
+2. HYCOM 격자와 ROMS 격자의 내삽 가중치 비율을 계산합니다.<br/>
    [makeRemapWeights](https://github.com/dohnkim/ROMS/blob/master/LBC/2_makeRemapWeights-v2.ipynb)
-3. HYCOM 자료를 ROMS의 측면경계장으로 만듭니다.
+3. HYCOM 자료를 ROMS의 측면경계장으로 만듭니다.<br/>
    [makeLBC4Soulik](https://github.com/dohnkim/ROMS/blob/master/LBC/3_makeLBC4Soulik-v2.ipynb)
 4. 생성된 "ROMS4Soulik_bc.nc"를 $PROJ 디렉토리에 복사합니다.
 
@@ -245,10 +245,10 @@ ROMS의 영역 격자를 만드는 방법은 모델의 역사 만큼이나 다�
 
 ## 3-5. 대기경계장(S.B.C, 표층외력) 만들기
 
-1. **GFS** 로 부터 모델의 전체 계산 시간에 해당하는 전지구 시계열 자료를 가져 옵니다. 
+1. **GFS** 로 부터 모델의 전체 계산 시간에 해당하는 전지구 시계열 자료를 가져 옵니다.<br/>
    [getGFS4SoulikSBC](https://github.com/dohnkim/ROMS/blob/master/SBC/1_getGFS4SoulikSBC-v1.ipynb)
 
-2. GFS 자료를 ROMS의 대기경계장으로 만듭니다.
+2. GFS 자료를 ROMS의 대기경계장으로 만듭니다.<br/>
    [makeSBC4Soulik](https://github.com/dohnkim/ROMS/blob/master/SBC/2_makeSBC4Soulik-v2.ipynb)
 
 3. 생성된 "roms_gfs_0p25_sbc_Soulik.nc"를 $PROJ 디렉토리에 복사합니다.
