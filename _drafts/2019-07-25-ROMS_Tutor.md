@@ -269,19 +269,19 @@ cat ocean.in << END
     TITLE = Typhoon Soulik
  MyAppCPP = SOULIK
   VARNAME = ${ROMSsrc}/trunk/ROMS/External/varinfo.dat
-       Lm == 338
-       Mm == 338
-        N == 30
-   NtileI == 6
-   NtileJ == 6
-   NTIMES == 1440
-       DT == 240.0d0
-  NDTFAST == 20
-  GRDNAME == ./Soulik_grd_v2.nc
-  ININAME == ./ROMS4Soulik_ic_2018-08-21T00:00:00Z.nc4
-  BRYNAME == ./ROMS4Soulik_bc.nc
-  NFFILES == 1
-  FRCNAME == ./roms_gfs_0p25_sbc_Soulik.nc
+       Lm == 430     ! Number of I-direction INTERIOR RHO-points
+       Mm == 320     ! Number of J-direction INTERIOR RHO-points
+        N == 30      ! Number of vertical levels
+   NtileI == 6       ! I-direction 병렬 분할 갯수
+   NtileJ == 6       ! J-direction 병렬 분할 갯수
+   NTIMES == 1440    ! 총 모의 계산 스텝. ex) NTIMES * DT = 총 모의 시간
+       DT == 240.0d0 ! BaroClinic(3D) 계산 시간 간격 (단위: seconds)
+  NDTFAST == 20      ! BaroClinic/BaroTropic time steps
+  GRDNAME == ./Soulik_grd_v2.nc                         ! 격자 파일
+  ININAME == ./ROMS4Soulik_ic_2018-08-21T00:00:00Z.nc4  ! 초기장 파일
+  BRYNAME == ./ROMS4Soulik_bc.nc                        ! 측면 경계장 파일
+  NFFILES == 1                                          ! 표층 경계장 파일의 갯수
+  FRCNAME == ./roms_gfs_0p25_sbc_Soulik.nc              ! 표층 경계장 파일
 ... ...
 END
 ```
