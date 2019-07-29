@@ -10,7 +10,6 @@ tags: [ROMS, Soulik]
 
 
 <p style="text-align:right">작성 : 김동훈 (<a href="http://www.dhkim.info">http://www.dhkim.info</a>, 인하대학교)<br/> & 문일주 (제주대학교)<br/>2019년 7월 25일</p>
-
 # 소 개
 
 ROMS (Regional Ocean Modeling System) 모델(모형)의 설치 및 실험에 관한 상세한 내용은
@@ -79,7 +78,7 @@ vi ./build_roms.bash
 
 ## 2-1. Header 파일 만들기
 
-ROMS의 컴파일 시 사용할 header 파일을 다음과 같이 작성합니다. 파일 이름은 $PROJ 디렉토리에 사용한 이름과 같은 soulik.h 로 저장합니다. 파일 이름은 모두 **소문자**이어야 합니다.
+ROMS의 컴파일 시 사용할 header 파일을 다음과 같이 작성합니다. 파일 이름은 $PROJ 디렉토리에 사용한 이름과 같은 soulik.h 로 저장합니다. 파일 이름은 모두 **소문자**이어야 합니다.<br/>각 옵션들에 대한 자세한 설명은 ROMS의 Wiki 페이지에 있는 [여기](https://www.myroms.org/wiki/cppdefs.h) 를 참고하세요.
 
 ```cpp
 cd $PROJ
